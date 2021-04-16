@@ -16,6 +16,8 @@ class AnimationMLDL(Scene):
         self.wait(3)
         self.intro()
         self.wait()
+        self.pred_network()
+        self.wait()
 
         # text_polito = Text("Politecnico di Torino Apr 2021", size=self.bottom_text_scale)
         # # for move in self.bottom_right_moves:
@@ -50,6 +52,12 @@ class AnimationMLDL(Scene):
         # self.play(Transform(paper_name_text, final_paper_name_text), Transform(author_name_text, final_author_name_text))
 
         # self.wait()
+    def pred_network(self):
+
+
+        rnn_image = SVGMobject('/home/delta/Documents/Università/Machine Learning and Deep Learning/animation/rnn_image1.svg')
+        rnn_image.scale(rnn_image).set_color(WHITE)
+        rnn_image.shift(RIGHT*2)
 
 
     def intro(self):
