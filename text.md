@@ -33,6 +33,22 @@ The compression rate wasn't up to par with the state of the art compression algo
 
 ## Handwriting Prediction
 
+Data during the handwriting prediction phase was treated as "online", which in this context means as real-valued x and y coordinates instead of "offline" handwriting which referes to the images being avaiable altogether. This was a deliberate choice due to the low dimensionality of online handwriting, in fact just three dimensions are needed: two real-valued features for each data point and a boolean variable stating if the pen was lifted from the paper or not.
+
+Complex pre-processing and features extraction techniques were avoided in order to steer clear of errors that are bound to happen when processing handwritten text, such as separating a single letter or not separating two different ones. These errors could be propagated through the whole network increasing the prediction and then synthetis error. Furthermore processing handwritten letters usually entails reducing the variation in the data by normalising skew, character size and other features that Graves wanted the network to model.
+
+One of the challenges of predicting handwritten as opossed to digital text is the fuzzy nature of the former, specifically points that are at the end of a letter and at the beginning of another could be part of both, this is the complete opposite of a one-hot encoded vector where each variable has a clearly assigned single value.
+
+### Mixeture Density Outputs
+
+In order to handle this characteristic of handwritten text Graves utilized the idea of mixture density networks, the intuition is to parameterise a mixture distribution at each timestep, specifically a mixture of gaussian distributions where each spike, or top part of a gaussian curve, corresponds to a possible upcoming prediction depending on which part of the graph the network sees itself in.
+
+A further challenge of online handwritten text is the fact that the pen could be lifted from the paper, effectively creating a section of space in which the network needs to interpolate between a known point, the last predicted one and an unknown point, the initial dot of the following letter. This problem is also handled by mixture distributions because each gaussian will have a starting point for the letter it represents so, by putting each distribution together, the network can create a section of space in which the first point of the predicted letter is likely to be, regardless of which letter it ends up being.
+
+The model was tested on a custom dataset and the results were quiet incouraging. The network, by predicting text like the one shown in the picture can clearly model strokes and long-range structures. As previously stated the model creates entirely new words due to the characters-based focus since its inception.
+
 ## Handwriting Synthesis
+
+
 
 ## Conclusions
