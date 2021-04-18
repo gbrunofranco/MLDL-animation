@@ -3,3 +3,8 @@
 *.zip
 *.m4a
 *.aac
+media
+.vscode
+__pycache__
+*.psd
+*.flac

@@ -52,6 +52,10 @@ class AnimationMLDL(Scene):
         # self.play(Transform(paper_name_text, final_paper_name_text), Transform(author_name_text, final_author_name_text))
 
         # self.wait()
+
+    def text_prediction(self):
+        pass
+
     def pred_network(self):
         hidden_layer_height = 0
         input_layer_height = -2.68
@@ -89,7 +93,7 @@ class AnimationMLDL(Scene):
                 input_arrow,
                 hidden_arrow,
                 output_arrow
-            )
+        )
         text = VGroup(
             input_text,
             hidden_text,
@@ -167,7 +171,6 @@ class AnimationMLDL(Scene):
             framebox_bias_c
         )
 
-
         framebox_input = VGroup(
             framebox_input_i_1,
             framebox_input_i_2,
@@ -220,7 +223,7 @@ class AnimationMLDL(Scene):
         code_out_gate.scale(code_scale).align_to(code_ex_text, LEFT)
         code_source = Text("Code directly from source at:\nhttps://github.com/szcom/rnnlib/blob/master/src/LstmLayer.hpp")
         code_source.scale(.25).align_to(code_ex_text, LEFT).shift(DOWN*3)
-        print(Code.styles_list)
+
         self.play(FadeIn(input_arrow),  FadeIn(input_text))
         self.play(FadeIn(hidden_arrow), FadeIn(hidden_text))
         self.play(FadeIn(output_arrow), FadeIn(output_text))
@@ -253,6 +256,8 @@ class AnimationMLDL(Scene):
         self.play(ReplacementTransform(framebox_input, framebox_weight))
         self.wait(2)
         self.play(ReplacementTransform(framebox_weight, framebox_bias))
+        self.wait(3)
+        self.play(FadeOut(framebox_bias), FadeOut(code_source), FadeOut(lstm_cell_img), FadeOut(math_text), FadeOut(code_ex_text), FadeOut(hidden_exp_text), FadeOut(code_out_gate))
 
 
     def intro(self):
