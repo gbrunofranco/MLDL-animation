@@ -15,9 +15,11 @@ class AnimationMLDL(Scene):
         self.create_initial_text()
         self.wait(3)
         self.intro()
-        self.wait()
+        self.wait(.25)
         self.pred_network()
         self.wait(2)
+        self.text_prediction()
+        self.wait()
 
         # text_polito = Text("Politecnico di Torino Apr 2021", size=self.bottom_text_scale)
         # # for move in self.bottom_right_moves:
@@ -54,7 +56,30 @@ class AnimationMLDL(Scene):
         # self.wait()
 
     def text_prediction(self):
-        pass
+        text_scale = .45
+
+        self.add_sound("trimmed_text_pred.wav")
+        word_based_text = Text("word-based approach").scale(text_scale).shift(LEFT*2.3)
+        word_based_arrow = Arrow(np.array([-.15, 0, 0]), np.array([.35, 0, 0]), buff=0)
+        word_based_characteristics_text = Text("Slightly better").scale(text_scale).shift(RIGHT*2.3)
+
+        character_based_text = Text("word-based approach").scale(text_scale).shift(LEFT*2.3).shift(DOWN)
+        character_based_arrow = Arrow(np.array([-.15, -1, 0]), np.array([.35, -1, 0]), buff=0)
+        character_based_characteristics_text = Text("More interesting").scale(text_scale).shift(RIGHT*2.3)
+
+
+
+        self.play(Write(word_based_text))
+        self.wait()
+        self.play(Write(character_based_text))
+        self.wait()
+        self.play(FadeIn(word_based_arrow))
+        self.play(FadeIn(word_based_characteristics_text))
+        self.wait()
+        self.play(FadeIn(character_based_arrow))
+        self.play(FadeIn(character_based_characteristics_text))
+        self.wait()
+
 
     def pred_network(self):
         hidden_layer_height = 0
@@ -71,7 +96,9 @@ class AnimationMLDL(Scene):
         first_rnn= ImageMobject("/home/delta/Documents/Università/Machine Learning and Deep Learning/animation/first_rnn_orig_transparent_cropped.png")
         first_rnn.scale(.8).set_color(WHITE)
         self.play(FadeIn(first_rnn))
-        self.wait(2)
+        self.add_sound("trimmed_pred_network.wav")
+        self.wait(6)
+
 
         input_arrow = Arrow(np.array([-5, input_layer_height, 0]), np.array([-3, input_layer_height, 0]), buff=0, stroke_width=2)
         VMobject.scale(input_arrow, arrows_scale)
@@ -112,7 +139,7 @@ class AnimationMLDL(Scene):
         function_gate_tex = MathTex(r"f_t =",r"\sigma",r"(", r"W_{xf}", r"x_t", r"+",r"W_{hf}",r"h_{t-1}", r"+", r"W_{cf}", r"c_{t-1}", r"+", r"b_f", r")").scale(latex_text_scale).align_to(input_gate_tex, LEFT).shift(DOWN*shift_horiz_tex)
         output_gate_tex = MathTex(r"o_t =",r"\sigma",r"(", r"W_{xo}", r"x_t", r"+",r"W_{ho}",r"h_{t-1}", r"+", r"W_{co}", r"c_{t-1}", r"+", r"b_o", r")").scale(latex_text_scale).align_to(input_gate_tex, LEFT).shift(DOWN*shift_horiz_tex*2)
         cell_gate_tex = MathTex(r"c_t =",r"i_t", r"tanh",r"(", r"W_{xi}", r"x_t", r"+",r"W_{hi}",r"h_{t-1}", r"+", r"b_i", r")").scale(latex_text_scale).align_to(input_gate_tex, LEFT).shift(DOWN*shift_horiz_tex*3)
-        hidden_gate_tex = MathTex(r"h_t = tanh(c_t)").scale(latex_text_scale).align_to(input_gate_tex, LEFT).shift(DOWN*shift_horiz_tex*4)
+        hidden_gate_tex = MathTex(r"h_t = ", r"tanh", r"(c_t)").scale(latex_text_scale).align_to(input_gate_tex, LEFT).shift(DOWN*shift_horiz_tex*4)
 
         framebox_sigma_i = SurroundingRectangle(input_gate_tex[1], buff=surr_rect_buff, stroke_width=surr_rect_stroke_width)
         framebox_weight_i_1 = SurroundingRectangle(input_gate_tex[3], buff=surr_rect_buff, stroke_width=surr_rect_stroke_width)
@@ -149,6 +176,11 @@ class AnimationMLDL(Scene):
         framebox_input_c_2 = SurroundingRectangle(cell_gate_tex[8], buff=surr_rect_buff, stroke_width=surr_rect_stroke_width)
         framebox_bias_c = SurroundingRectangle(cell_gate_tex[-2], buff=surr_rect_buff, stroke_width=surr_rect_stroke_width)
 
+
+        framebox_sigma_h = SurroundingRectangle(hidden_gate_tex[1], buff=surr_rect_buff, stroke_width=surr_rect_stroke_width)
+        framebox_input_h = SurroundingRectangle(hidden_gate_tex[2], buff=surr_rect_buff, stroke_width=surr_rect_stroke_width)
+        
+        
         math_text = VGroup(
             input_gate_tex,
             function_gate_tex,
@@ -161,14 +193,15 @@ class AnimationMLDL(Scene):
             framebox_sigma_i,
             framebox_sigma_f,
             framebox_sigma_o,
-            framebox_sigma_c
+            framebox_sigma_c,
+            framebox_sigma_h
         )
 
         framebox_bias = VGroup(
             framebox_bias_i,
             framebox_bias_f,
             framebox_bias_o,
-            framebox_bias_c
+            framebox_bias_c,
         )
 
         framebox_input = VGroup(
@@ -224,38 +257,40 @@ class AnimationMLDL(Scene):
         code_source = Text("Code directly from source at:\nhttps://github.com/szcom/rnnlib/blob/master/src/LstmLayer.hpp")
         code_source.scale(.25).align_to(code_ex_text, LEFT).shift(DOWN*3)
 
+
         self.play(FadeIn(input_arrow),  FadeIn(input_text))
         self.play(FadeIn(hidden_arrow), FadeIn(hidden_text))
         self.play(FadeIn(output_arrow), FadeIn(output_text))
-        self.wait(2)
+        self.wait(20)
         self.play(FadeOut(first_rnn))
         self.play(arrows.animate.shift(RIGHT*3.5), text.animate.shift(RIGHT*3))
-        self.wait(2)
-        self.play(FadeIn(input_exp_text))
         self.wait(1)
+        self.play(FadeIn(input_exp_text))
+        self.wait(3)
         self.play(FadeIn(output_exp_text))
         self.wait(1)
         self.play(FadeIn(hidden_exp_text))
-        self.wait(3)
+        self.wait(10)
         self.play(FadeOut(arrows), FadeOut(text), FadeOut(exp_text))
         self.play(Transform(hidden_exp_text, big_hidden_exp_text))
         self.wait(1)
+        self.add_sound("trimmed_lstm_cells.wav", gain=1.8)
         self.play(FadeIn(lstm_cell_img))
         self.wait(3)
         self.play(lstm_cell_img.animate.scale(.6).shift(*[UP*2, LEFT*5]))
         self.wait(1)
         self.play(Write(math_text), FadeIn(code_ex_text))
         self.play(FadeIn(code_source), FadeIn(code_out_gate))
-        self.wait(2)
+        self.wait(3)
         self.play(Create(framebox_first_f, rate_func=linear))
         self.wait(2)
         self.play(FadeOut(framebox_first_f))
+        self.wait(5)
+        self.play(Create(framebox_weight, rate_func=linear))
         self.wait(2)
-        self.play(Create(framebox_input, rate_func=linear))
-        self.wait(2)
-        self.play(ReplacementTransform(framebox_input, framebox_weight))
-        self.wait(2)
-        self.play(ReplacementTransform(framebox_weight, framebox_bias))
+        self.play(ReplacementTransform(framebox_weight, framebox_input))
+        self.wait(5)
+        self.play(ReplacementTransform(framebox_input, framebox_bias))
         self.wait(3)
         self.play(FadeOut(framebox_bias), FadeOut(code_source), FadeOut(lstm_cell_img), FadeOut(math_text), FadeOut(code_ex_text), FadeOut(hidden_exp_text), FadeOut(code_out_gate))
 
@@ -280,7 +315,7 @@ class AnimationMLDL(Scene):
                 first_arrow
             )
         self.play(first_rnn.animate.shift(UP))
-        self.wait(5)
+        self.wait(1.5)
 
         second_handwriting = SVGMobject('/home/delta/Documents/Università/Machine Learning and Deep Learning/animation/second_hand_ex.svg')
         second_handwriting.scale(svg_scale).align_to(first_font_text, LEFT).set_color(WHITE)
@@ -293,7 +328,7 @@ class AnimationMLDL(Scene):
                 second_arrow
             )
 
-        self.wait(3)
+        self.wait(1)
 
         third_font_text = Text("He dismissed the").scale(text_scale).shift(LEFT*2.3).shift(DOWN)
         fourth_font_text = Text("... ?").scale(text_scale).shift(RIGHT*2).shift(DOWN)
@@ -304,9 +339,9 @@ class AnimationMLDL(Scene):
                 third_arrow
             )
         self.play(FadeIn(third_rnn))
-        self.wait(4)        
+        self.wait(2)        
         self.play(FadeIn(second_rnn))
-        self.wait()
+        self.wait(6)
 
         self.play(FadeOut(first_rnn), FadeOut(second_rnn), FadeOut(third_rnn))
         
@@ -314,12 +349,12 @@ class AnimationMLDL(Scene):
         text_lstm.scale(text_scale)
         source_lstm = Text("1: S. Hochreiter, Y. Bengio, P. Frasconi, and J. Schmidhuber. Gradient Flow in Recurrent Nets: the Difficulty of Learning Long-term Dependencies. In S. C. Kremer and J. F. Kolen, editors, A Field Guide to Dynamical Recurrent Neural Networks. 2001.")
         source_lstm.scale(self.text_source_scale).shift(DOWN*2.5)
-        self.play(Write(text_lstm, run_time=2), FadeIn(source_lstm))
-        self.wait()
+        self.play(Write(text_lstm, run_time=3), FadeIn(source_lstm))
+        self.wait(14)
         self.play(FadeOut(text_lstm), FadeOut(source_lstm))
-        self.wait()
 
     def create_initial_text(self):
+        self.add_sound("trimmed_intro_final3.wav")
         text_polito = Text("Politecnico di Torino - Apr 2021")
         text_polito.scale(self.bottom_text_scale)
         text_polito.shift(*self.bottom_right_moves)
@@ -329,8 +364,10 @@ class AnimationMLDL(Scene):
         personal_name_text = Text("Gabriele Bruno Franco")
         final_personal_name_text = Text("  Gabriele Bruno Franco  ")
         final_personal_name_text.scale(self.bottom_text_scale).align_to(text_polito, UP).shift(LEFT*5)
+        self.wait(1)
+
         self.play(Write(personal_name_text))
-        self.wait()
+        self.wait(.5)
         self.play(Transform(personal_name_text, final_personal_name_text))
         self.wait()
 
@@ -341,7 +378,7 @@ class AnimationMLDL(Scene):
 
 
         self.play(Write(paper_name_text), Write(author_name_text))
-        self.wait()
+        self.wait(3)
 
         final_paper_name_text = Text("  Generating Sequences With Recurrent Neural Networks  ")
         final_author_name_text = Text("  Alex Graves  ")
