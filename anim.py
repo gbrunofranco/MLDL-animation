@@ -17,7 +17,7 @@ class AnimationMLDL(Scene):
         self.intro()
         self.wait(.25)
         self.pred_network()
-        self.wait(2)
+        self.wait(1.5)
         self.text_prediction()
         self.wait()
 
@@ -59,14 +59,26 @@ class AnimationMLDL(Scene):
         text_scale = .45
 
         self.add_sound("trimmed_text_pred.wav")
-        word_based_text = Text("word-based approach").scale(text_scale).shift(LEFT*2.3)
-        word_based_arrow = Arrow(np.array([-.15, 0, 0]), np.array([.35, 0, 0]), buff=0)
-        word_based_characteristics_text = Text("Slightly better").scale(text_scale).shift(RIGHT*2.3)
+        self.wait(2 )
+        word_based_text = Text("word-based approach").scale(text_scale).shift(LEFT*2.3).shift(UP*.5)
+        word_based_arrow = Arrow(np.array([-.15, .5, 0]), np.array([.35, .5, 0]), buff=0)
+        word_based_characteristics_text = Text("slightly better").scale(text_scale).shift(RIGHT*2.3).shift(UP*.5)
 
-        character_based_text = Text("word-based approach").scale(text_scale).shift(LEFT*2.3).shift(DOWN)
-        character_based_arrow = Arrow(np.array([-.15, -1, 0]), np.array([.35, -1, 0]), buff=0)
-        character_based_characteristics_text = Text("More interesting").scale(text_scale).shift(RIGHT*2.3)
+        character_based_text = Text("character-based approach").scale(text_scale).align_to(word_based_text, RIGHT).shift(DOWN*.5)
+        character_based_arrow = Arrow(np.array([-.15, -.5, 0]), np.array([.35, -.5, 0]), buff=0)
+        character_based_characteristics_text = Text("more interesting").scale(text_scale).align_to(word_based_characteristics_text, LEFT) .shift(DOWN*.5)
 
+        penn_treebank_title = Text("The Penn Treebank Dataset").scale(.8).shift(UP*3)
+        penn_treebank_words = Text("10k words").scale(text_scale).shift(LEFT*2.3).shift(UP*.5)
+        penn_treebank_characters = Text("1M characters").scale(text_scale).align_to(penn_treebank_words, RIGHT).shift(DOWN*.5)
+        penn_treebank_arrow = Arrow(np.array([-.15, 0, 0]), np.array([.35, 0, 0]), buff=0)
+        penn_treebank_overfit = Text("easily overfit").scale(text_scale).shift(RIGHT*2.3) 
+        penn_treebank_noise = Text("weighted and \nadaptively weighted noise").scale(text_scale).align_to(word_based_characteristics_text, LEFT)
+
+        wikipedia_title = Text("The Wikipedia Dataset").scale(.8).shift(UP*3)
+        wikipedia_reg = Text("filled with regularities").scale(text_scale).shift(LEFT*2.3)
+        wikipedia_state = Text("needs to remember\nwhich state it's in").scale(text_scale).align_to(word_based_characteristics_text, LEFT)
+        wikipedia_arrow = Arrow(np.array([-.15, 0, 0]), np.array([.35, 0, 0]), buff=0)
 
 
         self.play(Write(word_based_text))
@@ -78,7 +90,27 @@ class AnimationMLDL(Scene):
         self.wait()
         self.play(FadeIn(character_based_arrow))
         self.play(FadeIn(character_based_characteristics_text))
-        self.wait()
+        self.wait(9)
+        self.play(FadeOut(word_based_text), FadeOut(character_based_text), FadeOut(word_based_arrow), FadeOut(word_based_characteristics_text), FadeOut(character_based_arrow),  FadeOut(character_based_characteristics_text))
+        self.wait(2)
+        self.play(Write(penn_treebank_title))
+        self.wait(1.5)
+        self.play(Write(penn_treebank_words), Write(penn_treebank_characters))
+        self.wait(8)
+        self.play(FadeIn(penn_treebank_arrow), Write(penn_treebank_overfit))
+        self.wait(3)
+        self.play(penn_treebank_overfit.animate.shift(LEFT*4), FadeOut(penn_treebank_characters), FadeOut(penn_treebank_words))
+        self.play(Write(penn_treebank_noise))
+        self.wait(21)
+        self.play(FadeOut(penn_treebank_overfit), FadeOut(penn_treebank_noise), FadeOut(penn_treebank_arrow), FadeOut(penn_treebank_title))
+        self.play(Write(wikipedia_title))
+        self.wait(17)
+        self.play(Write(wikipedia_reg))
+        self.wait(10)
+        self.play(Create(wikipedia_arrow), Write(wikipedia_state))
+        self.wait(16)
+        self.play(FadeOut(wikipedia_arrow), FadeOut(wikipedia_state), FadeOut(wikipedia_title), FadeOut(wikipedia_reg))
+
 
 
     def pred_network(self):
@@ -178,7 +210,6 @@ class AnimationMLDL(Scene):
 
 
         framebox_sigma_h = SurroundingRectangle(hidden_gate_tex[1], buff=surr_rect_buff, stroke_width=surr_rect_stroke_width)
-        framebox_input_h = SurroundingRectangle(hidden_gate_tex[2], buff=surr_rect_buff, stroke_width=surr_rect_stroke_width)
         
         
         math_text = VGroup(
@@ -274,7 +305,7 @@ class AnimationMLDL(Scene):
         self.play(FadeOut(arrows), FadeOut(text), FadeOut(exp_text))
         self.play(Transform(hidden_exp_text, big_hidden_exp_text))
         self.wait(1)
-        self.add_sound("trimmed_lstm_cells.wav", gain=1.8)
+        self.add_sound("trimmed_lstm_cells.wav", gain=2.5)
         self.play(FadeIn(lstm_cell_img))
         self.wait(3)
         self.play(lstm_cell_img.animate.scale(.6).shift(*[UP*2, LEFT*5]))
