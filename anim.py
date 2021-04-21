@@ -1,7 +1,7 @@
 from manim import *
+import scipy.stats as stats
 
-
-class AnimationMLDL(Scene):
+class AnimationMLDL(GraphScene, Scene):
     # config.background_color = WHITE
     # bottom_left_moves = [LEFT*5, DOWN*3]
     bottom_right_moves = [RIGHT*5, DOWN*3.5]
@@ -10,8 +10,20 @@ class AnimationMLDL(Scene):
     bottom_text_scale = 0.2
     text_source_scale = .25
 
-    def construct(self):
+    def setup(self):
+        GraphScene.setup(self)
 
+    def __init__(self, **kwargs):
+            GraphScene.__init__(
+                self,
+                y_axis_label=r"$P(letters)$",
+                x_axis_label=r"$t$",
+                y_max=8,
+                x_max=18,
+                x_min=-8,
+                **kwargs)
+
+    def construct(self):
         self.create_initial_text()
         self.wait(3)
         self.intro()
@@ -20,7 +32,8 @@ class AnimationMLDL(Scene):
         self.wait(1.5)
         self.text_prediction()
         self.wait()
-
+        self.handwriting_pred()
+        self.wait()
         # text_polito = Text("Politecnico di Torino Apr 2021", size=self.bottom_text_scale)
         # # for move in self.bottom_right_moves:
         # #     text_polito.shift(move)
@@ -55,31 +68,141 @@ class AnimationMLDL(Scene):
 
         # self.wait()
 
+    def handwriting_pred(self):
+        text_scale = .45
+        self.add_sound("trimmed_handwritten_pred.wav", gain=2.5)
+        
+        online_data = Text("Online handwriting").scale(text_scale).shift(LEFT*1.9).shift(UP*.5)
+        online_arrow = Arrow(np.array([0, .5, 0]), np.array([.5, .5, 0]), buff=0)
+        online_exp_text = Text("Real valued (x,y) coords").scale(text_scale).shift(RIGHT*2.6).shift(UP*.5)
+        online_arrow_2 = Arrow(np.array([.25, .5, 0]), np.array([.75, .5, 0]), buff=0).shift(RIGHT)
+        online_exp_text_2 = Text("3 dimensions (2 real, 1 bool)").scale(text_scale).align_to(online_exp_text, LEFT).shift(UP*.5).shift(RIGHT*1.2)
+
+        offline_data = Text("Offline handwriting").scale(text_scale).align_to(online_data, RIGHT).shift(DOWN*.5)
+        offline_arrow = Arrow(np.array([0, -.5, 0]), np.array([.5, -.5, 0]), buff=0)
+        offline_exp_text = Text("Processing of images").scale(text_scale).align_to(online_exp_text, LEFT).shift(DOWN*.5)
+        offline_arrow_2 = Arrow(np.array([.25, -.5, 0]), np.array([.75, -.5, 0]), buff=0).shift(RIGHT)
+        offline_exp_text_2 = Text("Complex pre-processing").scale(text_scale).align_to(online_exp_text, LEFT).shift(DOWN*.5).shift(RIGHT*1.2)
+        offline_arrow_3 = Arrow(np.array([2.5, -.75, 0]), np.array([2.5, -1.25, 0]), buff=0).shift(RIGHT)
+        offline_exp_text_3 = Text("Propagation of errors and\nreduction variation in the data").scale(text_scale).align_to(online_exp_text, LEFT).shift(DOWN*1.8).shift(RIGHT*1.2)
+        
+        fuziness_title = Text("Fuzziness of handwriting").scale(.8).shift(UP*3)
+
+        text_arrows_types = VGroup(
+            online_data,
+            online_arrow,
+            online_exp_text,
+            offline_data,
+            offline_arrow,
+            offline_exp_text
+        )
+
+        fuzziness_pic = ImageMobject("/home/delta/Documents/Università/Machine Learning and Deep Learning/animation/fuziness_hand1.png")
+        fuzziness_pic.scale(4.5).set_color(WHITE)
+        fuzziness_text1 = Text("Should the RNN predict 'h' or 'e' here?").scale(text_scale).shift(DOWN*1.2).shift(RIGHT*.7)
+        fuzziness_text2 = Text("This is the opposite of a one-hot encoded vector!").scale(text_scale).shift(DOWN*1.8).shift(RIGHT*.7)
+        
+        def gaussian(x, amp = 5, mu = 3, sig = 1):
+            return amp * np.exp((-1 / 2 * ((x - mu) / sig) ** 2))
+
+        gaussian_text = Text("Each Gaussian curve is a \npossible prediction").scale(text_scale).shift(RIGHT*1.7)
+        
+        interpolation_text = Text("Prediction for the word 'under'\nThe colored areas are where the model guesses the next point to be").scale(text_scale).shift(DOWN*2)
+        interpolation_image = ImageMobject("/home/delta/Documents/Università/Machine Learning and Deep Learning/animation/interpolation_image.png")
+        interpolation_image.scale(.7).shift(UP*.6)
+        
+        pred_handwriting_text = Text("Example of predicted text").scale(text_scale).shift(RIGHT*3.5).shift(DOWN*.3)
+        predicted_handwriting = ImageMobject("/home/delta/Documents/Università/Machine Learning and Deep Learning/animation/predicted_handwriting.png")
+        predicted_handwriting.scale(.45).shift(UP*.6).shift(RIGHT*3.5)
+        mixt_density_title = Text("Mixture distributions").scale(.8).shift(UP*3)
+
+
+        self.wait(3)
+        self.play(Write(online_data))
+        self.wait()
+        self.play(FadeIn(online_arrow))
+        self.play(Write(online_exp_text))
+        self.wait()
+        self.play(Write(offline_data))
+        self.wait()
+        self.play(FadeIn(offline_arrow))
+        self.play(Write(offline_exp_text))
+        self.wait()
+        self.play(text_arrows_types.animate.shift(LEFT*3.4))
+        self.wait()
+        self.play(FadeIn(offline_arrow_2), FadeIn(online_arrow_2))
+        self.play(Write(offline_exp_text_2), Write(online_exp_text_2))
+        self.wait()
+        self.play(FadeIn(offline_arrow_3))
+        self.play(Write(offline_exp_text_3))
+        self.wait(45)
+        self.play(FadeOut(offline_exp_text_2), FadeOut(online_exp_text_2), FadeOut(text_arrows_types), FadeOut(offline_arrow_2), FadeOut(offline_arrow_3), FadeOut(offline_exp_text_3), FadeOut(online_arrow_2))
+        self.play(Write(fuziness_title))
+        self.play(FadeIn(fuzziness_pic), Write(fuzziness_text1))
+        self.wait(2)
+        self.play(Write(fuzziness_text2))
+        self.wait(8)
+        self.play(FadeOut(fuzziness_pic), FadeOut(fuzziness_text1), FadeOut(fuzziness_text2), FadeOut(fuziness_title))
+        # self.wait(2)
+        self.play(Write(mixt_density_title))
+        self.setup_axes()
+        self.axes.scale(.7).shift(DOWN*.5)
+
+        gaussian1 = self.get_graph(gaussian, x_min=-5, x_max=15).set_stroke(width=5).set_color(WHITE)
+        gaussian2 = self.get_graph(lambda x: gaussian(x, amp = 3, mu = 8, sig = .8), x_min=-5, x_max=15).set_stroke(width=5).set_color(BLUE)
+        gaussian3 = self.get_graph(lambda x: gaussian(x, amp = 2, mu = -1, sig = 1.4), x_min=-5, x_max=15).set_stroke(width=5).set_color(RED)
+        gaussian4 = self.get_graph(lambda x: gaussian(x, amp = 1.5, mu = 12, sig = .6), x_min=-5, x_max=15).set_stroke(width=5).set_color(GREEN)
+
+        self.add_sound("trimmed_mixture_density.wav")
+
+        self.play(Create(gaussian1, run_time=3))
+        self.play(Create(gaussian2, run_time=3))
+        self.play(Create(gaussian3, run_time=3))
+        self.play(Create(gaussian4, run_time=3))
+
+        self.wait(2)
+        self.play(Write(gaussian_text))
+        self.wait(15)
+
+        self.play(FadeOut(gaussian1), FadeOut(gaussian2), FadeOut(gaussian3), FadeOut(gaussian4), FadeOut(self.axes), FadeOut(gaussian_text))
+        self.wait(2)
+        self.play(Write(interpolation_text), FadeIn(interpolation_image))
+        self.wait(12)
+        self.play(interpolation_image.animate.shift(LEFT*3.5), FadeIn(predicted_handwriting))
+        self.play(Write(pred_handwriting_text))
+        self.wait(32)
+        self.play(FadeOut(interpolation_image), FadeOut(interpolation_text), FadeOut(predicted_handwriting), FadeOut(pred_handwriting_text), FadeOut(mixt_density_title))
+        self.wait(2)
+
+
     def text_prediction(self):
         text_scale = .45
 
-        self.add_sound("trimmed_text_pred.wav")
-        self.wait(2 )
-        word_based_text = Text("word-based approach").scale(text_scale).shift(LEFT*2.3).shift(UP*.5)
+        self.add_sound("trimmed_text_pred.wav", gain=2)
+        self.wait(2)
+        word_based_text = Text("Word-based approach").scale(text_scale).shift(LEFT*2.3).shift(UP*.5)
         word_based_arrow = Arrow(np.array([-.15, .5, 0]), np.array([.35, .5, 0]), buff=0)
-        word_based_characteristics_text = Text("slightly better").scale(text_scale).shift(RIGHT*2.3).shift(UP*.5)
+        word_based_characteristics_text = Text("Usually better").scale(text_scale).shift(RIGHT*2.3).shift(UP*.5)
 
-        character_based_text = Text("character-based approach").scale(text_scale).align_to(word_based_text, RIGHT).shift(DOWN*.5)
+        character_based_text = Text("Character-based approach").scale(text_scale).align_to(word_based_text, RIGHT).shift(DOWN*.5)
         character_based_arrow = Arrow(np.array([-.15, -.5, 0]), np.array([.35, -.5, 0]), buff=0)
-        character_based_characteristics_text = Text("more interesting").scale(text_scale).align_to(word_based_characteristics_text, LEFT) .shift(DOWN*.5)
+        character_based_characteristics_text = Text("More interesting as\nit can create new words").scale(text_scale).align_to(word_based_characteristics_text, LEFT) .shift(DOWN*.5)
 
         penn_treebank_title = Text("The Penn Treebank Dataset").scale(.8).shift(UP*3)
         penn_treebank_words = Text("10k words").scale(text_scale).shift(LEFT*2.3).shift(UP*.5)
         penn_treebank_characters = Text("1M characters").scale(text_scale).align_to(penn_treebank_words, RIGHT).shift(DOWN*.5)
         penn_treebank_arrow = Arrow(np.array([-.15, 0, 0]), np.array([.35, 0, 0]), buff=0)
-        penn_treebank_overfit = Text("easily overfit").scale(text_scale).shift(RIGHT*2.3) 
-        penn_treebank_noise = Text("weighted and \nadaptively weighted noise").scale(text_scale).align_to(word_based_characteristics_text, LEFT)
+        penn_treebank_overfit = Text("Easily overfit").scale(text_scale).shift(RIGHT*2.3) 
+        penn_treebank_noise = Text("Weighted and \nadaptively weighted noise").scale(text_scale).align_to(word_based_characteristics_text, LEFT)
+        penn_treebank_characteristics = Text("Commonly used for NLP benchmarking").scale(text_scale*.8).shift(UP*2.3)
+        penn_treebank_results = Text("Perplexity of 89.4 obtained with: ensamble of RNNs, cache model and 5-gram approach").scale(text_scale*.8).shift(DOWN*2.3)
 
         wikipedia_title = Text("The Wikipedia Dataset").scale(.8).shift(UP*3)
-        wikipedia_reg = Text("filled with regularities").scale(text_scale).shift(LEFT*2.3)
-        wikipedia_state = Text("needs to remember\nwhich state it's in").scale(text_scale).align_to(word_based_characteristics_text, LEFT)
+        wikipedia_reg = Text("Filled with regularities").scale(text_scale).shift(LEFT*2.3)
+        wikipedia_state = Text("Needs to remember\nwhich state it's in").scale(text_scale).align_to(word_based_characteristics_text, LEFT)
         wikipedia_arrow = Arrow(np.array([-.15, 0, 0]), np.array([.35, 0, 0]), buff=0)
-
+        wikipedia_characteristics = Text("Commonly used for compression benchmarking").scale(text_scale*.8).shift(UP*2.3)
+        wikipedia_results = Text("Incouraging results\nNiche articles had clear influence, this implies that it's not just the frequency of a word that influences its memorization").scale(text_scale*.8).shift(DOWN*2.3)
 
         self.play(Write(word_based_text))
         self.wait()
@@ -96,21 +219,28 @@ class AnimationMLDL(Scene):
         self.play(Write(penn_treebank_title))
         self.wait(1.5)
         self.play(Write(penn_treebank_words), Write(penn_treebank_characters))
+        self.wait()
+        self.play(Write(penn_treebank_characteristics))
         self.wait(8)
         self.play(FadeIn(penn_treebank_arrow), Write(penn_treebank_overfit))
         self.wait(3)
         self.play(penn_treebank_overfit.animate.shift(LEFT*4), FadeOut(penn_treebank_characters), FadeOut(penn_treebank_words))
         self.play(Write(penn_treebank_noise))
-        self.wait(21)
-        self.play(FadeOut(penn_treebank_overfit), FadeOut(penn_treebank_noise), FadeOut(penn_treebank_arrow), FadeOut(penn_treebank_title))
+        self.wait(10)
+        self.play(Write(penn_treebank_results))
+        self.wait(5)
+        self.play(FadeOut(penn_treebank_overfit), FadeOut(penn_treebank_noise), FadeOut(penn_treebank_arrow), FadeOut(penn_treebank_title), FadeOut(penn_treebank_characteristics), FadeOut(penn_treebank_results))
         self.play(Write(wikipedia_title))
-        self.wait(17)
+        self.wait(5)
+        self.play(Write(wikipedia_characteristics))
+        self.wait(12)
         self.play(Write(wikipedia_reg))
         self.wait(10)
         self.play(Create(wikipedia_arrow), Write(wikipedia_state))
-        self.wait(16)
-        self.play(FadeOut(wikipedia_arrow), FadeOut(wikipedia_state), FadeOut(wikipedia_title), FadeOut(wikipedia_reg))
-
+        self.wait(8)
+        self.play(Write(wikipedia_results))
+        self.wait(8)
+        self.play(FadeOut(wikipedia_arrow), FadeOut(wikipedia_state), FadeOut(wikipedia_title), FadeOut(wikipedia_reg), FadeOut(wikipedia_characteristics), FadeOut(wikipedia_results))
 
 
     def pred_network(self):
@@ -141,6 +271,9 @@ class AnimationMLDL(Scene):
         VMobject.scale(hidden_arrow, arrows_scale)
         hidden_text = Text("Hidden Layers").scale(.35).shift(UP*hidden_layer_height).align_to(input_text, RIGHT)
         hidden_exp_text = Text("LSTM cells").scale(.35).shift(UP*hidden_layer_height).align_to(input_exp_text, LEFT)
+        hidden_exp_text_2 = Text("Stable memory &\n error recovery").scale(.35).shift(UP*hidden_layer_height).shift(5*RIGHT)
+        hidden_arrow_2 = Arrow(np.array([2, hidden_layer_height, 0]), np.array([4, hidden_layer_height, 0]), buff=0, stroke_width=2)
+        VMobject.scale(hidden_arrow_2, arrows_scale)
 
 
         output_arrow = Arrow(np.array([-5, output_layer_height, 0]), np.array([-3, output_layer_height, 0]), buff=0, stroke_width=2)
@@ -169,9 +302,9 @@ class AnimationMLDL(Scene):
 
         input_gate_tex = MathTex(r"i_t =",r"\sigma",r"(", r"W_{xi}", r"x_t", r"+",r"W_{hi}",r"h_{t-1}", r"+", r"W_{ci}", r"c_{t-1}", r"+", r"b_i", r")").scale(latex_text_scale).shift(RIGHT*left_horizontal_latex_pos)
         function_gate_tex = MathTex(r"f_t =",r"\sigma",r"(", r"W_{xf}", r"x_t", r"+",r"W_{hf}",r"h_{t-1}", r"+", r"W_{cf}", r"c_{t-1}", r"+", r"b_f", r")").scale(latex_text_scale).align_to(input_gate_tex, LEFT).shift(DOWN*shift_horiz_tex)
-        output_gate_tex = MathTex(r"o_t =",r"\sigma",r"(", r"W_{xo}", r"x_t", r"+",r"W_{ho}",r"h_{t-1}", r"+", r"W_{co}", r"c_{t-1}", r"+", r"b_o", r")").scale(latex_text_scale).align_to(input_gate_tex, LEFT).shift(DOWN*shift_horiz_tex*2)
-        cell_gate_tex = MathTex(r"c_t =",r"i_t", r"tanh",r"(", r"W_{xi}", r"x_t", r"+",r"W_{hi}",r"h_{t-1}", r"+", r"b_i", r")").scale(latex_text_scale).align_to(input_gate_tex, LEFT).shift(DOWN*shift_horiz_tex*3)
-        hidden_gate_tex = MathTex(r"h_t = ", r"tanh", r"(c_t)").scale(latex_text_scale).align_to(input_gate_tex, LEFT).shift(DOWN*shift_horiz_tex*4)
+        output_gate_tex = MathTex(r"o_t =",r"\sigma",r"(", r"W_{xo}", r"x_t", r"+",r"W_{ho}",r"h_{t-1}", r"+", r"W_{co}", r"c_{t}", r"+", r"b_o", r")").scale(latex_text_scale).align_to(input_gate_tex, LEFT).shift(DOWN*shift_horiz_tex*2)
+        cell_gate_tex = MathTex(r"c_t = f_{t}c_{t-1}",r"i_t", r"tanh",r"(", r"W_{xc}", r"x_t", r"+",r"W_{hc}",r"h_{t-1}", r"+", r"b_c", r")").scale(latex_text_scale).align_to(input_gate_tex, LEFT).shift(DOWN*shift_horiz_tex*3)
+        hidden_gate_tex = MathTex(r"h_t = o_{t}", r"tanh", r"(c_t)").scale(latex_text_scale).align_to(input_gate_tex, LEFT).shift(DOWN*shift_horiz_tex*4)
 
         framebox_sigma_i = SurroundingRectangle(input_gate_tex[1], buff=surr_rect_buff, stroke_width=surr_rect_stroke_width)
         framebox_weight_i_1 = SurroundingRectangle(input_gate_tex[3], buff=surr_rect_buff, stroke_width=surr_rect_stroke_width)
@@ -301,8 +434,11 @@ class AnimationMLDL(Scene):
         self.play(FadeIn(output_exp_text))
         self.wait(1)
         self.play(FadeIn(hidden_exp_text))
-        self.wait(10)
-        self.play(FadeOut(arrows), FadeOut(text), FadeOut(exp_text))
+        self.wait(1)
+        self.play(FadeIn(hidden_exp_text_2), FadeIn(hidden_arrow_2))
+
+        self.wait(8)
+        self.play(FadeOut(arrows), FadeOut(text), FadeOut(exp_text), FadeOut(hidden_exp_text_2), FadeOut(hidden_arrow_2))
         self.play(Transform(hidden_exp_text, big_hidden_exp_text))
         self.wait(1)
         self.add_sound("trimmed_lstm_cells.wav", gain=2.5)
@@ -384,6 +520,7 @@ class AnimationMLDL(Scene):
         self.wait(14)
         self.play(FadeOut(text_lstm), FadeOut(source_lstm))
 
+
     def create_initial_text(self):
         self.add_sound("trimmed_intro_final3.wav")
         text_polito = Text("Politecnico di Torino - Apr 2021")
@@ -418,4 +555,3 @@ class AnimationMLDL(Scene):
 
 
         self.play(Transform(paper_name_text, final_paper_name_text), Transform(author_name_text, final_author_name_text))
-        

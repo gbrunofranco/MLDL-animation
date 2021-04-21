@@ -49,19 +49,19 @@ The model was tested on a custom dataset and the results were quiet incouraging.
 
 ## Handwriting Synthesis
 
-Handwriting synthesis refers to the generation of text for a given input string. The previous Recurrent Neural Network is unable to do so as it doesn't account for any digital input text so Graves needed to change the structure of the network to the one shown in the picture.
+Handwriting synthesis refers to the generation of text from a given input string. The previous Recurrent Neural Network is unable to do so as it doesn't account for any digital input text so Graves needed to change the structure of the network to the one shown in the picture.
 This model was used instead of a transducer because exploratory work on transducers didn't show encouraging results. 
 
 The input string is passed to the hidden layers through the the window layer, which gives to each previous character an attention level which is a measure of how important a certain section of text input actually is for the prediction as opposed to traditional networks that usually will take into consideration the complete avaiable data.
 
-The results were very good already, as the network was clearly able to synthesise human-like text in a lot of different styles. The author wanted to expand it to both write in a certain hand-picked style and write in a more readable way. 
+The results were already quiet outstanding, as the network was clearly able to synthesise human-like text in a lot of different styles. The author wanted to expand it to both write in a certain hand-picked style and write in a more readable way. 
 
-In order to achieve the former the author changed the sampling technique, instead of sampling randomly from the dataset, more readable text was given priority over unreadable text. The intuition between what is more readable is that what it's more easily predictable by the network also corresponds to what it's more readable by a human. By sampling in this manner the results changed quiet clearly, by increasing the bias even more towards easily readable strings, the synthetised text becomes very akin to a font, with barely no variation in each letter.
+In order to achieve the former the author changed the sampling technique, instead of sampling randomly from the dataset, more readable text was given priority over hard-to-read text. The intuition between what is more readable is that what it's more easily predictable by the network also corresponds to what it's more readable by a human. By sampling in this manner the results changed quiet clearly, by increasing the bias even more towards easily readable strings, the synthetised text becomes very akin to a font, with close to no variation in each letter.
 
-On the contrary, the intuition behind being able to select a certain style of writing the author could have simply sampled just the wanted style but this would have reduced the avaiable data by a large margin. The proposed solution is "primed" sampling, the intuition behind it is that we join each string with a character of the wanted style.
+On the contrary, in order to being able to select a certain style of writing the author could have sampled just the wanted style and trained the RNN on it but this would have reduced the avaiable data by a large margin. The proposed solution is called "primed" sampling, the intuition behind it is that Graves joined each training handwritten text with a character of the wanted style, creating a sort of persistent memory of the wanted style.
 
 Primed and biased sampling can be combined, the result is a more human-readable version of the selected style.
 
 ## Conclusions
 
-This paper clearly showed that LSTM-based RNNs are clearly fit for synthetisation of text. A possible way of approaching future work could be to better understand the internal representation of the data in order to better distribute the data and apply a similar technique to extract annotation from text. 
+This paper clearly showed that LSTM-based RNNs are fit for synthetisation of text. A possible way of approaching future work could be to better understand the internal representation of the data in order to improve the distributions and possibly apply a similar technique to extract annotation from text. 
