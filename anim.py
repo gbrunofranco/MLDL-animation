@@ -10,8 +10,8 @@ class AnimationMLDL(GraphScene, Scene):
     bottom_text_scale = 0.2
     text_source_scale = .25
 
-    def setup(self):
-        GraphScene.setup(self)
+    # def setup(self):
+    #     GraphScene.setup(self)
 
     def __init__(self, **kwargs):
             GraphScene.__init__(
@@ -29,11 +29,14 @@ class AnimationMLDL(GraphScene, Scene):
         self.intro()
         self.wait(.25)
         self.pred_network()
-        self.wait(1.5)
+        # self.wait(1.5)
         self.text_prediction()
-        self.wait()
+        # self.wait()
         self.handwriting_pred()
+        # self.wait()
+        self.handwriting_synth()
         self.wait()
+
         # text_polito = Text("Politecnico di Torino Apr 2021", size=self.bottom_text_scale)
         # # for move in self.bottom_right_moves:
         # #     text_polito.shift(move)
@@ -68,10 +71,99 @@ class AnimationMLDL(GraphScene, Scene):
 
         # self.wait()
 
+
+    def handwriting_synth(self):
+        self.add_sound("trimmed_hand_synt_1.wav", gain=1.5)
+        second_rnn= ImageMobject("/home/delta/Documents/Università/Machine Learning and Deep Learning/animation/second_rnn_transparent.png")
+        second_rnn.scale(1.1).shift(LEFT).shift(UP*.5).set_color(WHITE)
+
+        arrows_scale = .35
+        window_layer_height = .95
+        string_layer_height = -2.75
+
+        window_arrow = Arrow(np.array([-5, window_layer_height, 0]), np.array([-3, window_layer_height, 0]), buff=0, stroke_width=2)
+        VMobject.scale(window_arrow, arrows_scale).shift(LEFT*.5)
+        window_text = Text("Window Layer").scale(.35).shift(UP*window_layer_height).shift(LEFT*6)
+   
+        string_arrow = Arrow(np.array([-5, string_layer_height, 0]), np.array([-3, string_layer_height, 0]), buff=0, stroke_width=2)
+        VMobject.scale(string_arrow, arrows_scale)
+        string_text = Text("String Layer").scale(.35).shift(UP*string_layer_height).align_to(window_text, RIGHT)
+
+        transducers_text = Text("Custom model created because\nexploratory work on transducers\nwasn't satisfying⁵").scale(.35).shift(UP).shift(RIGHT*4.5)
+        transducers_source = Text("5: A. Graves. Sequence transduction with recurrent neural networks.\nIn ICML Representation Learning Worksop, 2012.").scale(self.text_source_scale).shift(DOWN*3).shift(RIGHT*3.8)
+        
+        first_results_pic = ImageMobject("/home/delta/Documents/Università/Machine Learning and Deep Learning/animation/real_results_transparent.png")
+        first_results_pic.scale(.95).shift(LEFT).shift(UP*.5).set_color(WHITE)
+        first_results_text = Text("The first line is real handwriting and\n the others are generated samples").scale(.35).shift(UP*.5).shift(RIGHT*4.5)
+
+
+        biased_text = Text("Biased sampling").scale(.35).shift(UP*.5).shift(LEFT*2)
+        biased_arrow = Arrow(np.array([-1, .5, 0]), np.array([-.5, .5, 0]), buff=0).shift(RIGHT*.2)
+        biased_text_2 = Text("Readable text\ngiven priority").scale(.35).shift(UP*.5).shift(RIGHT)
+        biased_arrow_2 = Arrow(np.array([0, .5, 0]), np.array([.5, .5, 0]), buff=0).shift(LEFT*.5).shift(RIGHT*1.5)
+
+        biased_pic = ImageMobject("/home/delta/Documents/Università/Machine Learning and Deep Learning/animation/biased_sampling_transparent.png")
+        biased_pic.scale(.7).shift(RIGHT*4).set_color(WHITE)
+
+        primed_height = -.5
+        primed_text = Text("Primed sampling").scale(.35).shift(UP*primed_height).align_to(biased_text, LEFT)
+        primed_arrow_1 = Arrow(np.array([-1, primed_height, 0]), np.array([-.5, primed_height, 0]), buff=0).align_to(biased_arrow, LEFT)
+        primed_arrow_2 = Arrow(np.array([0, primed_height, 0]), np.array([.5, primed_height, 0]), buff=0).align_to(biased_arrow_2, LEFT)
+        primed_text_2 = Text("Input string\nis joined with\na character of\nthe wanted style").scale(.35).shift(UP*primed_height).align_to(biased_text_2, LEFT)
+        primed_pic = ImageMobject("/home/delta/Documents/Università/Machine Learning and Deep Learning/animation/primed_sampling_transparent.png")
+        primed_pic.scale(.7).align_to(biased_pic, LEFT).shift(DOWN).set_color(WHITE)
+
+        biased_group = Group(
+            biased_text,
+            biased_text_2,
+            biased_arrow,
+            biased_arrow_2,
+        )
+
+        primed_group = Group(
+            primed_text,
+            primed_arrow_1,
+            primed_text_2,
+            primed_arrow_2,
+        )
+
+        self.wait(8)
+        self.play(FadeIn(second_rnn))
+        self.wait()
+        self.play(FadeIn(window_arrow), FadeIn(window_text))
+        self.play(FadeIn(string_arrow), FadeIn(string_text))
+        self.wait(8)
+        self.play(Write(transducers_text))
+        self.play(Write(transducers_source))
+        self.wait(20)
+        self.play(FadeOut(second_rnn), FadeOut(window_arrow), FadeOut(window_text), FadeOut(string_arrow), FadeOut(string_text), FadeOut(transducers_source), FadeOut(transducers_text))
+        # self.wait(1)
+        self.play(FadeIn(first_results_pic), Write(first_results_text))
+        self.wait(16)
+        self.play(FadeOut(first_results_pic), FadeOut(first_results_text))
+        self.add_sound("trimmed_hand_synt_2.wav", gain=3)
+        self.play(Write(biased_text))
+        self.wait(2)
+        self.play(FadeIn(biased_arrow), Write(biased_text_2))
+        self.wait(5)
+        self.play(biased_text.animate.shift(LEFT), biased_text_2.animate.shift(LEFT), biased_arrow.animate.shift(LEFT), FadeIn(biased_arrow_2), FadeIn(biased_pic))
+        self.wait(21)
+        self.play(biased_group.animate.shift(UP*2), biased_pic.animate.shift(UP*2).scale(.8))
+        self.wait(15)
+        self.play(FadeIn(primed_text))
+        self.wait(3)
+        self.play(Write(primed_text_2), FadeIn(primed_arrow_1))
+        self.wait(5)
+        self.play(primed_group.animate.shift(LEFT), FadeIn(primed_pic), FadeIn(primed_arrow_2))
+        self.wait(9)
+        self.play(FadeOut(primed_text), FadeOut(biased_group), FadeOut(biased_pic),  FadeOut(primed_text_2), FadeOut(primed_group), FadeOut(primed_pic))
+        self.wait(5)
+
+
     def handwriting_pred(self):
         text_scale = .45
-        self.add_sound("trimmed_handwritten_pred.wav", gain=2.5)
-        
+        self.add_sound("trimmed_handwritten_pred2.wav", gain=4.5)
+
         online_data = Text("Online handwriting").scale(text_scale).shift(LEFT*1.9).shift(UP*.5)
         online_arrow = Arrow(np.array([0, .5, 0]), np.array([.5, .5, 0]), buff=0)
         online_exp_text = Text("Real valued (x,y) coords").scale(text_scale).shift(RIGHT*2.6).shift(UP*.5)
@@ -83,9 +175,9 @@ class AnimationMLDL(GraphScene, Scene):
         offline_exp_text = Text("Processing of images").scale(text_scale).align_to(online_exp_text, LEFT).shift(DOWN*.5)
         offline_arrow_2 = Arrow(np.array([.25, -.5, 0]), np.array([.75, -.5, 0]), buff=0).shift(RIGHT)
         offline_exp_text_2 = Text("Complex pre-processing").scale(text_scale).align_to(online_exp_text, LEFT).shift(DOWN*.5).shift(RIGHT*1.2)
-        offline_arrow_3 = Arrow(np.array([2.5, -.75, 0]), np.array([2.5, -1.25, 0]), buff=0).shift(RIGHT)
-        offline_exp_text_3 = Text("Propagation of errors and\nreduction variation in the data").scale(text_scale).align_to(online_exp_text, LEFT).shift(DOWN*1.8).shift(RIGHT*1.2)
-        
+        offline_arrow_3 = Arrow(np.array([2.8, -.80, 0]), np.array([2.8, -1.3, 0]), buff=0).shift(RIGHT)
+        offline_exp_text_3 = Text("Propagation of errors and\nreduction of variation in the data").scale(text_scale).align_to(online_exp_text, LEFT).shift(DOWN*1.8).shift(RIGHT*1.2)
+
         fuziness_title = Text("Fuzziness of handwriting").scale(.8).shift(UP*3)
 
         text_arrows_types = VGroup(
@@ -105,17 +197,23 @@ class AnimationMLDL(GraphScene, Scene):
         def gaussian(x, amp = 5, mu = 3, sig = 1):
             return amp * np.exp((-1 / 2 * ((x - mu) / sig) ** 2))
 
-        gaussian_text = Text("Each Gaussian curve is a \npossible prediction").scale(text_scale).shift(RIGHT*1.7)
-        
-        interpolation_text = Text("Prediction for the word 'under'\nThe colored areas are where the model guesses the next point to be").scale(text_scale).shift(DOWN*2)
+        gaussian_text = Text("Each Gaussian curve is a \npossible prediction").scale(text_scale).shift(RIGHT*1)
+
+        interpolation_text = Text("Prediction for the word 'under'\n\nThe colored sections are where the model guesses the next point to be\nThese are the \"mean\" of the first dot of each possible prediction").scale(text_scale).shift(DOWN*1.8)
         interpolation_image = ImageMobject("/home/delta/Documents/Università/Machine Learning and Deep Learning/animation/interpolation_image.png")
         interpolation_image.scale(.7).shift(UP*.6)
-        
+
         pred_handwriting_text = Text("Example of predicted text").scale(text_scale).shift(RIGHT*3.5).shift(DOWN*.3)
         predicted_handwriting = ImageMobject("/home/delta/Documents/Università/Machine Learning and Deep Learning/animation/predicted_handwriting.png")
         predicted_handwriting.scale(.45).shift(UP*.6).shift(RIGHT*3.5)
-        mixt_density_title = Text("Mixture distributions").scale(.8).shift(UP*3)
-
+        mixt_density_title = Text("Mixture Distributions").scale(.8).shift(UP*3)
+        source_mix_nn0 = Text("The idea of mixture density neural networks was first introduced in:")
+        source_mix_nn1 = Text("3: C. Bishop. Mixture density networks. Technical report, 1994.")
+        source_mix_nn2 = Text("4: C. Bishop. Neural Networks for Pattern Recognition. Oxford Univ. Press, Inc., 1995.")
+        source_mix_nn0.scale(self.text_source_scale).shift(DOWN*2.7).shift(RIGHT*2)
+        source_mix_nn1.scale(self.text_source_scale).shift(DOWN*3).align_to(source_mix_nn0, LEFT)
+        source_mix_nn1.shift(RIGHT*.2)
+        source_mix_nn2.scale(self.text_source_scale).shift(DOWN*3.2).align_to(source_mix_nn1, LEFT)
 
         self.wait(3)
         self.play(Write(online_data))
@@ -145,40 +243,43 @@ class AnimationMLDL(GraphScene, Scene):
         self.play(FadeOut(fuzziness_pic), FadeOut(fuzziness_text1), FadeOut(fuzziness_text2), FadeOut(fuziness_title))
         # self.wait(2)
         self.play(Write(mixt_density_title))
-        self.setup_axes()
-        self.axes.scale(.7).shift(DOWN*.5)
+        self.setup_axes() #changed source of setup_axes to not play or add axes
+        self.axes.scale(.7).shift(DOWN*.5).shift(LEFT*.7)
 
         gaussian1 = self.get_graph(gaussian, x_min=-5, x_max=15).set_stroke(width=5).set_color(WHITE)
-        gaussian2 = self.get_graph(lambda x: gaussian(x, amp = 3, mu = 8, sig = .8), x_min=-5, x_max=15).set_stroke(width=5).set_color(BLUE)
+        gaussian2 = self.get_graph(lambda x: gaussian(x, amp = 3, mu = 7, sig = .8), x_min=-5, x_max=15).set_stroke(width=5).set_color(BLUE)
         gaussian3 = self.get_graph(lambda x: gaussian(x, amp = 2, mu = -1, sig = 1.4), x_min=-5, x_max=15).set_stroke(width=5).set_color(RED)
         gaussian4 = self.get_graph(lambda x: gaussian(x, amp = 1.5, mu = 12, sig = .6), x_min=-5, x_max=15).set_stroke(width=5).set_color(GREEN)
 
-        self.add_sound("trimmed_mixture_density.wav")
+        self.add_sound("trimmed_mixture_density3.wav", gain=4.5)
 
+        self.play(Create(self.axes))
         self.play(Create(gaussian1, run_time=3))
         self.play(Create(gaussian2, run_time=3))
         self.play(Create(gaussian3, run_time=3))
         self.play(Create(gaussian4, run_time=3))
 
-        self.wait(2)
+        self.wait(1)
         self.play(Write(gaussian_text))
-        self.wait(15)
-
-        self.play(FadeOut(gaussian1), FadeOut(gaussian2), FadeOut(gaussian3), FadeOut(gaussian4), FadeOut(self.axes), FadeOut(gaussian_text))
+        self.play(Write(source_mix_nn0))
+        self.play(Write(source_mix_nn1))
+        self.play(Write(source_mix_nn2))
+        self.wait(13)
+        self.play(FadeOut(gaussian1), FadeOut(gaussian2), FadeOut(gaussian3), FadeOut(gaussian4), FadeOut(self.axes), FadeOut(gaussian_text), FadeOut(source_mix_nn0), FadeOut(source_mix_nn1), FadeOut(source_mix_nn2))
         self.wait(2)
         self.play(Write(interpolation_text), FadeIn(interpolation_image))
         self.wait(12)
         self.play(interpolation_image.animate.shift(LEFT*3.5), FadeIn(predicted_handwriting))
         self.play(Write(pred_handwriting_text))
-        self.wait(32)
+        self.wait(30)
         self.play(FadeOut(interpolation_image), FadeOut(interpolation_text), FadeOut(predicted_handwriting), FadeOut(pred_handwriting_text), FadeOut(mixt_density_title))
-        self.wait(2)
+        # self.wait(2)
 
 
     def text_prediction(self):
         text_scale = .45
 
-        self.add_sound("trimmed_text_pred.wav", gain=2)
+        self.add_sound("trimmed_text_pred.wav", gain=3.5)
         self.wait(2)
         word_based_text = Text("Word-based approach").scale(text_scale).shift(LEFT*2.3).shift(UP*.5)
         word_based_arrow = Arrow(np.array([-.15, .5, 0]), np.array([.35, .5, 0]), buff=0)
@@ -199,7 +300,7 @@ class AnimationMLDL(GraphScene, Scene):
 
         wikipedia_title = Text("The Wikipedia Dataset").scale(.8).shift(UP*3)
         wikipedia_reg = Text("Filled with regularities").scale(text_scale).shift(LEFT*2.3)
-        wikipedia_state = Text("Needs to remember\nwhich state it's in").scale(text_scale).align_to(word_based_characteristics_text, LEFT)
+        wikipedia_state = Text("Needs to remember which state\nit's in to be able to close it properly").scale(text_scale).align_to(word_based_characteristics_text, LEFT)
         wikipedia_arrow = Arrow(np.array([-.15, 0, 0]), np.array([.35, 0, 0]), buff=0)
         wikipedia_characteristics = Text("Commonly used for compression benchmarking").scale(text_scale*.8).shift(UP*2.3)
         wikipedia_results = Text("Incouraging results\nNiche articles had clear influence, this implies that it's not just the frequency of a word that influences its memorization").scale(text_scale*.8).shift(DOWN*2.3)
@@ -239,7 +340,7 @@ class AnimationMLDL(GraphScene, Scene):
         self.play(Create(wikipedia_arrow), Write(wikipedia_state))
         self.wait(8)
         self.play(Write(wikipedia_results))
-        self.wait(8)
+        self.wait(6)
         self.play(FadeOut(wikipedia_arrow), FadeOut(wikipedia_state), FadeOut(wikipedia_title), FadeOut(wikipedia_reg), FadeOut(wikipedia_characteristics), FadeOut(wikipedia_results))
 
 
@@ -250,7 +351,7 @@ class AnimationMLDL(GraphScene, Scene):
         text_horizontal_position = -5.5
         exp_text_horizontal_position = +1.5
         arrows_scale = .35
-        
+
         latex_text_scale = .6
         surr_rect_buff = 0.05
         surr_rect_stroke_width = 1.5
@@ -260,7 +361,6 @@ class AnimationMLDL(GraphScene, Scene):
         self.play(FadeIn(first_rnn))
         self.add_sound("trimmed_pred_network.wav")
         self.wait(6)
-
 
         input_arrow = Arrow(np.array([-5, input_layer_height, 0]), np.array([-3, input_layer_height, 0]), buff=0, stroke_width=2)
         VMobject.scale(input_arrow, arrows_scale)
@@ -275,7 +375,6 @@ class AnimationMLDL(GraphScene, Scene):
         hidden_arrow_2 = Arrow(np.array([2, hidden_layer_height, 0]), np.array([4, hidden_layer_height, 0]), buff=0, stroke_width=2)
         VMobject.scale(hidden_arrow_2, arrows_scale)
 
-
         output_arrow = Arrow(np.array([-5, output_layer_height, 0]), np.array([-3, output_layer_height, 0]), buff=0, stroke_width=2)
         VMobject.scale(output_arrow, arrows_scale)
         output_text = Text("Output Layer").scale(.35).shift(UP*output_layer_height).align_to(input_text, RIGHT)
@@ -286,15 +385,18 @@ class AnimationMLDL(GraphScene, Scene):
                 hidden_arrow,
                 output_arrow
         )
+
         text = VGroup(
             input_text,
             hidden_text,
             output_text
         )
+
         exp_text = VGroup(
             input_exp_text,
             output_exp_text
         )
+
         shift_horiz_tex = .5
         big_hidden_exp_text = Text("LSTM cells").scale(.8).shift(UP*3)
         lstm_cell_img= ImageMobject("/home/delta/Documents/Università/Machine Learning and Deep Learning/animation/lstm_cell_transparent.png")
@@ -303,7 +405,7 @@ class AnimationMLDL(GraphScene, Scene):
         input_gate_tex = MathTex(r"i_t =",r"\sigma",r"(", r"W_{xi}", r"x_t", r"+",r"W_{hi}",r"h_{t-1}", r"+", r"W_{ci}", r"c_{t-1}", r"+", r"b_i", r")").scale(latex_text_scale).shift(RIGHT*left_horizontal_latex_pos)
         function_gate_tex = MathTex(r"f_t =",r"\sigma",r"(", r"W_{xf}", r"x_t", r"+",r"W_{hf}",r"h_{t-1}", r"+", r"W_{cf}", r"c_{t-1}", r"+", r"b_f", r")").scale(latex_text_scale).align_to(input_gate_tex, LEFT).shift(DOWN*shift_horiz_tex)
         output_gate_tex = MathTex(r"o_t =",r"\sigma",r"(", r"W_{xo}", r"x_t", r"+",r"W_{ho}",r"h_{t-1}", r"+", r"W_{co}", r"c_{t}", r"+", r"b_o", r")").scale(latex_text_scale).align_to(input_gate_tex, LEFT).shift(DOWN*shift_horiz_tex*2)
-        cell_gate_tex = MathTex(r"c_t = f_{t}c_{t-1}",r"i_t", r"tanh",r"(", r"W_{xc}", r"x_t", r"+",r"W_{hc}",r"h_{t-1}", r"+", r"b_c", r")").scale(latex_text_scale).align_to(input_gate_tex, LEFT).shift(DOWN*shift_horiz_tex*3)
+        cell_gate_tex = MathTex(r"c_t = f_{t}c_{t-1} + ",r"i_t", r"tanh",r"(", r"W_{xc}", r"x_t", r"+",r"W_{hc}",r"h_{t-1}", r"+", r"b_c", r")").scale(latex_text_scale).align_to(input_gate_tex, LEFT).shift(DOWN*shift_horiz_tex*3)
         hidden_gate_tex = MathTex(r"h_t = o_{t}", r"tanh", r"(c_t)").scale(latex_text_scale).align_to(input_gate_tex, LEFT).shift(DOWN*shift_horiz_tex*4)
 
         framebox_sigma_i = SurroundingRectangle(input_gate_tex[1], buff=surr_rect_buff, stroke_width=surr_rect_stroke_width)
@@ -314,7 +416,7 @@ class AnimationMLDL(GraphScene, Scene):
         framebox_input_i_2 = SurroundingRectangle(input_gate_tex[7], buff=surr_rect_buff, stroke_width=surr_rect_stroke_width)
         framebox_input_i_3 = SurroundingRectangle(input_gate_tex[10], buff=surr_rect_buff, stroke_width=surr_rect_stroke_width)
         framebox_bias_i = SurroundingRectangle(input_gate_tex[-2], buff=surr_rect_buff, stroke_width=surr_rect_stroke_width)
-        
+
 
         framebox_sigma_f = SurroundingRectangle(function_gate_tex[1], buff=surr_rect_buff, stroke_width=surr_rect_stroke_width)
         framebox_weight_f_1 = SurroundingRectangle(function_gate_tex[3], buff=surr_rect_buff, stroke_width=surr_rect_stroke_width)
@@ -341,10 +443,8 @@ class AnimationMLDL(GraphScene, Scene):
         framebox_input_c_2 = SurroundingRectangle(cell_gate_tex[8], buff=surr_rect_buff, stroke_width=surr_rect_stroke_width)
         framebox_bias_c = SurroundingRectangle(cell_gate_tex[-2], buff=surr_rect_buff, stroke_width=surr_rect_stroke_width)
 
-
         framebox_sigma_h = SurroundingRectangle(hidden_gate_tex[1], buff=surr_rect_buff, stroke_width=surr_rect_stroke_width)
-        
-        
+   
         math_text = VGroup(
             input_gate_tex,
             function_gate_tex,
@@ -421,7 +521,6 @@ class AnimationMLDL(GraphScene, Scene):
         code_source = Text("Code directly from source at:\nhttps://github.com/szcom/rnnlib/blob/master/src/LstmLayer.hpp")
         code_source.scale(.25).align_to(code_ex_text, LEFT).shift(DOWN*3)
 
-
         self.play(FadeIn(input_arrow),  FadeIn(input_text))
         self.play(FadeIn(hidden_arrow), FadeIn(hidden_text))
         self.play(FadeIn(output_arrow), FadeIn(output_text))
@@ -441,7 +540,7 @@ class AnimationMLDL(GraphScene, Scene):
         self.play(FadeOut(arrows), FadeOut(text), FadeOut(exp_text), FadeOut(hidden_exp_text_2), FadeOut(hidden_arrow_2))
         self.play(Transform(hidden_exp_text, big_hidden_exp_text))
         self.wait(1)
-        self.add_sound("trimmed_lstm_cells.wav", gain=2.5)
+        self.add_sound("trimmed_lstm_cells.wav", gain=4.5)
         self.play(FadeIn(lstm_cell_img))
         self.wait(3)
         self.play(lstm_cell_img.animate.scale(.6).shift(*[UP*2, LEFT*5]))
